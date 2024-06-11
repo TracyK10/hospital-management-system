@@ -1,14 +1,16 @@
+# lib/models/patient.py
 from models.__init__ import CONN, CURSOR
+from medical_record import Record
 
 class Patient:
     
     all = {}
     
-    def __init__(self, name, age, id=None):
+    def __init__(self, name, age, medical_records_id, id=None):
         self.id = id
         self.name = name
         self.age = age
-        # self.medical_records = medical_records
+        self.medical_records_id = medical_records_id
     
     def __repr__(self):
         return (
@@ -37,6 +39,17 @@ class Patient:
         else:
             raise ValueError("Age must be a positive integer")
     
+    @property
+    def medical_records(self):
+        return self._medical_records
+    
+    @medical_records.setter
+    def medical_records(self, medical_records):
+        if type(medical_records) is int and Record.find_by_id(medical_records):
+            self._medical_records = medical_records
+        else:
+            raise ValueError("Medical records must reference a record in the database")
+    
     @classmethod
     def create_table(cls):
         """Create a new table to persist the attributes of Patient instances"""
@@ -45,7 +58,8 @@ class Patient:
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 age INTEGER NOT NULL,
-                medical_records TEXT[]
+                medical_records INTEGER,
+                FOREIGN KEY (medical_records) REFERENCES medical_records(id)
             )
         """
         CURSOR.execute(sql)
@@ -85,9 +99,9 @@ class Patient:
         CONN.commit()
     
     @classmethod
-    def create(cls, name, age):
+    def create(cls, name, age, medical_records_id):
         """Create a new Patient instance and persist it to the database"""
-        patient = cls(name, age)
+        patient = cls(name, age, medical_records_id)
         patient.save()
         return patient
     
@@ -101,9 +115,10 @@ class Patient:
             # ensure attributes match row values in case local instance was modified
             patient.name = row[1]
             patient.age = row[2]
+            patient.medical_records_id = row[3]
         else:
             # create a new instance using row values
-            patient = cls(row[1], row[2], id=row[0])
+            patient = cls(row[1], row[2], row[3], id=row[0])
             cls.all[row[0]] = patient
         return patient
     
