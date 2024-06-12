@@ -2,26 +2,47 @@
 
 ## Overview
 
-The Hospital Management System is a Python command-line application designed to help manage patient records, doctor information, appointments, and medical records. It uses SQLite as its database to store and retrieve data efficiently.
+The Hospital Management System is designed to facilitate the management of hospital records through a simple CLI. Users can manage patients, doctors, appointments, and medical records with ease. This README provides detailed information on the project's structure and how to use it. It uses SQLite as its database to store and retrieve data efficiently.
 
-## Directory Structure
+# File Descriptions
 
-hospital_management/
-│
-├── __init__.py
-├── main.py
-├── database.py
-├── patient.py
-├── doctor.py
-├── appointment.py
-└── medical_record.py
+## CLI Script
 
-## Features
+### lib/cli.py
+The main entry point of the application. It displays a menu and handles user inputs to navigate through different management functions such as managing patients, doctors, appointments, and medical records.
 
-- **Manage Patients**: Add, view, update, and delete patient records.
-- **Manage Doctors**: Add, view, update, and delete doctor records.
-- **Manage Appointments**: Schedule, view, update, and cancel appointments.
-- **Manage Medical Records**: Add, view, update, and delete medical records.
+## Models
+
+### lib/models/patient.py
+Manages patient-related operations such as adding, viewing, updating, and deleting patients.
+#### Functions:
+##### manage_patients(): Displays a menu for patient management and handles user input.
+##### add_patient(): Adds a new patient to the database.
+##### view_patients(): Lists all patients.
+##### update_patient(): Updates an existing patient's information.
+##### delete_patient(): Deletes a patient from the database.
+
+### lib/models/doctor.py
+Manages doctor-related operations similar to patient operations.
+
+#### Functions
+
+##### manage_appointments(): Displays a menu for appointment management and handles user input.
+##### add_appointment(): Schedules a new appointment.
+##### view_appointments(): Lists all appointments.
+##### update_appointment(): Updates an existing appointment.
+##### delete_appointment(): Cancels an appointment.
+
+### lib/models/medical_record.py
+Manages medical record-related operations such as adding, viewing, updating, and deleting medical records.
+
+#### Functions
+##### manage_medical_records(): Displays a menu for medical record management and handles user input.
+##### add_medical_record(): Adds a new medical record to the database.
+##### view_medical_records(): Lists all medical records.
+##### update_medical_record(): Updates an existing medical record.
+##### delete_medical_record(): Deletes a medical record from the database.
+
 
 ## Database Schema
 
@@ -55,9 +76,9 @@ hospital_management/
 ## Installation
 
 1. **Clone the repository**:
-    `
+    
 
-2. **Create a virtual environment** (optional but recommended):
+2. **Create a virtual environment** 
    
 
 3. **Install dependencies**:
