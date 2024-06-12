@@ -19,9 +19,12 @@ def main():
 
 
 def menu():
-    print("Please select an option:")
+    print("\n--- Hospital Management System ---")
     print("0. Exit the program")
-    print("1. Some useful function")
+    print("2. Manage Patients")
+    print("3. Manage Doctors")
+    print("4. Manage Appointments")
+    print("5. Manage Medical Records")
 
 
 if __name__ == "__main__":

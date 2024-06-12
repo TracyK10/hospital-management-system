@@ -1,32 +1,46 @@
 # lib/models/patient.py
 from models.__init__ import CONN, CURSOR
 from medical_record import Record
+from appointment import Appointment
 
 class Patient:
     
     all = {}
     
-    def __init__(self, name, age, medical_records_id, id=None):
+    def __init__(self, first_name, last_name, age, id=None):
         self.id = id
-        self.name = name
+        self.first_name = first_name
+        self.last_name = last_name
         self.age = age
-        self.medical_records_id = medical_records_id
-    
+        self.medical_records = []
+        self.appointments = []
+
     def __repr__(self):
         return (
-            f"Patient(id={self.id}, name={self.name}, age={self.age}, medical_records={self.medical_records})"
+            f"Patient(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, age={self.age}, medical_records={self.medical_records}, appointments={self.appointments})"
         )
     
     @property
-    def name(self):
-        return self._name
+    def first_name(self):
+        return self._first_name
     
-    @name.setter
-    def name(self, name):
-        if isinstance(name, str) and len(name) > 0:
-            self._name = name
+    @first_name.setter
+    def first_name(self, first_name):
+        if isinstance(first_name, str) and len(first_name) > 0:
+            self._first_name = first_name
         else:
-            raise ValueError("Name must be a non-empty string")
+            raise ValueError("First name must be a non-empty string")
+
+    @property
+    def last_name(self):
+        return self._last_name
+    
+    @last_name.setter
+    def last_name(self, last_name):
+        if isinstance(last_name, str) and len(last_name) > 0:
+            self._last_name = last_name
+        else:
+            raise ValueError("Last name must be a non-empty string")
             
     @property
     def age(self):
@@ -39,27 +53,15 @@ class Patient:
         else:
             raise ValueError("Age must be a positive integer")
     
-    @property
-    def medical_records(self):
-        return self._medical_records
-    
-    @medical_records.setter
-    def medical_records(self, medical_records):
-        if type(medical_records) is int and Record.find_by_id(medical_records):
-            self._medical_records = medical_records
-        else:
-            raise ValueError("Medical records must reference a record in the database")
-    
     @classmethod
     def create_table(cls):
         """Create a new table to persist the attributes of Patient instances"""
         sql = """
             CREATE TABLE IF NOT EXISTS patients (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                age INTEGER NOT NULL,
-                medical_records INTEGER,
-                FOREIGN KEY (medical_records) REFERENCES medical_records(id)
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                age INTEGER NOT NULL
             )
         """
         CURSOR.execute(sql)
@@ -75,10 +77,10 @@ class Patient:
     def save(self):
         """Persist the attributes of a Patient instance to the database"""
         sql = """
-            INSERT INTO patients (name, age, medical_records)
+            INSERT INTO patients (first_name, last_name, age)
             VALUES (?, ?, ?)
         """
-        CURSOR.execute(sql, (self.name, self.age, self.medical_records))
+        CURSOR.execute(sql, (self.first_name, self.last_name, self.age))
         CONN.commit()
         self.id = CURSOR.lastrowid
     
@@ -86,10 +88,10 @@ class Patient:
         """Update the table row corresponding to the current Patient instance"""
         sql = """
             UPDATE patients
-            SET name = ?, age = ?, medical_records = ?
+            SET first_name = ?, last_name = ?, age = ?
             WHERE id = ?
         """
-        CURSOR.execute(sql, (self.name, self.age, self.medical_records, self.id))
+        CURSOR.execute(sql, (self.first_name, self.last_name, self.age, self.id))
         CONN.commit()
     
     def delete(self):
@@ -99,27 +101,33 @@ class Patient:
         CONN.commit()
     
     @classmethod
-    def create(cls, name, age, medical_records_id):
+    def create(cls, first_name, last_name, age):
         """Create a new Patient instance and persist it to the database"""
-        patient = cls(name, age, medical_records_id)
+        patient = cls(first_name, last_name, age)
         patient.save()
         return patient
     
     @classmethod
     def instance_from_db(cls, row):
-        """Return an Patient object having the attribute values from the table row."""
+        """Return a Patient object having the attribute values from the table row."""
         
-        # check the dictionary for existing instances using the row's primary key
+        # Check the dictionary for existing instances using the row's primary key
         patient = cls.all.get(row[0])
         if patient:
-            # ensure attributes match row values in case local instance was modified
-            patient.name = row[1]
-            patient.age = row[2]
-            patient.medical_records_id = row[3]
+            # Ensure attributes match row values in case local instance was modified
+            patient.first_name = row[1]
+            patient.last_name = row[2]
+            patient.age = row[3]
         else:
-            # create a new instance using row values
+            # Create a new instance using row values
             patient = cls(row[1], row[2], row[3], id=row[0])
             cls.all[row[0]] = patient
+        
+        # Retrieve and assign related medical records
+        patient.medical_records = Record.find_by_patient_id(patient.id)
+        # Retrieve and assign related appointments
+        patient.appointments = Appointment.find_by_patient_id(patient.id)
+        
         return patient
     
     @classmethod
@@ -138,8 +146,8 @@ class Patient:
         return cls.instance_from_db(row) if row else None
     
     @classmethod
-    def find_by_name(cls, name):
+    def find_by_name(cls, first_name, last_name):
         """Return a list of Patient instances with the given name"""
-        sql = "SELECT * FROM patients WHERE name = ?"
-        row = CURSOR.execute(sql, (name,)).fetchone()
+        sql = "SELECT * FROM patients WHERE first_name = ? AND last_name = ?"
+        row = CURSOR.execute(sql, (first_name, last_name)).fetchone()
         return cls.instance_from_db(row) if row else None
