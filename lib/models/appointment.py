@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 from models.__init__ import CONN, CURSOR
 from models.doctor import Doctor
 from models.patient import Patient
+=======
+# lib/models/appointment.py
+from models.__init__ import CONN, CURSOR
+>>>>>>> 4bc14eb (Add CLI Interface)
 
 class Appointment:
     
@@ -166,3 +171,68 @@ class Appointment:
         CURSOR.execute(sql, (doctor_id,))
         rows = CURSOR.fetchall()
         return [cls.instance_from_db(row) for row in rows]
+<<<<<<< HEAD
+=======
+def manage_appointments():
+    while True:
+        print("\n--- Manage Appointments ---")
+        print("1. Create Appointment")
+        print("2. View All Appointments")
+        print("3. Find Appointment by ID")
+        print("4. Delete Appointment")
+        print("0. Back to Main Menu")
+        
+        choice = input("> ")
+        
+        if choice == "1":
+            create_appointment()
+        elif choice == "2":
+            view_all_appointments()
+        elif choice == "3":
+            find_appointment_by_id()
+        elif choice == "4":
+            delete_appointment()
+        elif choice == "0":
+            break
+        else:
+            print("Invalid choice, please try again.")
+
+def create_appointment():
+    try:
+        appointment_date = input("Enter appointment date (YYYY-MM-DD HH:MM): ")
+        patient_id = int(input("Enter patient ID: "))
+        doctor_id = int(input("Enter doctor ID: "))
+        notes = input("Enter notes (optional): ")
+        Appointment.create(appointment_date, patient_id, doctor_id, notes)
+        print("Appointment created successfully!")
+    except Exception as e:
+        print(f"Error creating appointment: {e}")
+
+def view_all_appointments():
+    appointments = Appointment.get_all()
+    for appointment in appointments:
+        print(appointment)
+
+def find_appointment_by_id():
+    try:
+        appointment_id = int(input("Enter appointment ID: "))
+        appointment = Appointment.find_by_id(appointment_id)
+        if appointment:
+            print(appointment)
+        else:
+            print("Appointment not found.")
+    except ValueError:
+        print("Invalid ID format.")
+
+def delete_appointment():
+    try:
+        appointment_id = int(input("Enter appointment ID: "))
+        appointment = Appointment.find_by_id(appointment_id)
+        if appointment:
+            appointment.delete()
+            print("Appointment deleted successfully.")
+        else:
+            print("Appointment not found.")
+    except ValueError:
+        print("Invalid ID format.")
+>>>>>>> 4bc14eb (Add CLI Interface)
