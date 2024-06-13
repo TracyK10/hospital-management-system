@@ -1,7 +1,7 @@
 # lib/models/patient.py
 from models.__init__ import CONN, CURSOR
-from medical_record import MedicalRecord
-from appointment import Appointment
+from models.medical_record import MedicalRecord
+from models.appointment import Appointment
 
 class Patient:
     
@@ -161,3 +161,81 @@ class Patient:
         sql = "SELECT * FROM patients WHERE first_name = ? AND last_name = ?"
         row = CURSOR.execute(sql, (first_name, last_name)).fetchone()
         return cls.instance_from_db(row) if row else None
+    
+def manage_patients():
+    while True:
+        print("\n--- Patient Management Menu ---")
+        print("1. View all patients")
+        print("2. Add a new patient")
+        print("3. Update a patient")
+        print("4. Delete a patient")
+        print("5. Return to main menu")
+        
+        choice = input("Enter your choice: ")
+        
+        if choice == "1":
+            view_all_patients()
+        elif choice == "2":
+            add_patient()
+        elif choice == "3":
+            update_patient()
+        elif choice == "4":
+            delete_patient()
+        elif choice == "5":
+            break
+        else:
+            print("Invalid choice. Please enter a number between 1 and 5.")
+
+def view_all_patients():
+    patients = Patient.get_all()
+    if patients:
+        for patient in patients:
+            print(patient)
+    else:
+        print("No patients found.")
+
+def add_patient():
+    first_name = input("Enter patient's first name: ")
+    last_name = input("Enter patient's last name: ")
+    age = int(input("Enter patient's age: "))
+    gender = input("Enter patient's gender (Male/Female/Other): ")
+    
+    try:
+        patient = Patient.create(first_name, last_name, age, gender)
+        print(f"Patient {patient.first_name} {patient.last_name} added successfully.")
+    except ValueError as e:
+        print(f"Error: {e}")
+
+def update_patient():
+    patient_id = int(input("Enter patient ID to update: "))
+    patient = Patient.find_by_id(patient_id)
+    
+    if patient:
+        new_first_name = input(f"Enter new first name (current: {patient.first_name}): ")
+        new_last_name = input(f"Enter new last name (current: {patient.last_name}): ")
+        new_age = int(input(f"Enter new age (current: {patient.age}): "))
+        new_gender = input(f"Enter new gender (current: {patient.gender}): ")
+        
+        try:
+            patient.first_name = new_first_name
+            patient.last_name = new_last_name
+            patient.age = new_age
+            patient.gender = new_gender
+            patient.update()
+            print(f"Patient {patient.first_name} {patient.last_name} updated successfully.")
+        except ValueError as e:
+            print(f"Error: {e}")
+    else:
+        print("Patient not found.")
+
+def delete_patient():
+    patient_id = int(input("Enter patient ID to delete: "))
+    patient = Patient.find_by_id(patient_id)
+    
+    if patient:
+        confirm = input(f"Are you sure you want to delete patient {patient.first_name} {patient.last_name}? (y/n): ")
+        if confirm.lower() == 'y':
+            patient.delete()
+            print(f"Patient {patient.first_name} {patient.last_name} deleted successfully.")
+    else:
+        print("Patient not found.")
