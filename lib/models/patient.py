@@ -123,17 +123,13 @@ class Patient:
     @classmethod
     def instance_from_db(cls, row):
         """Return a Patient object having the attribute values from the table row."""
-        
-        # Check the dictionary for existing instances using the row's primary key
         patient = cls.all.get(row[0])
         if patient:
-            # Ensure attributes match row values in case local instance was modified
             patient.first_name = row[1]
             patient.last_name = row[2]
             patient.age = row[3]
             patient.gender = row[4]
         else:
-            # Create a new instance using row values
             patient = cls(row[1], row[2], row[3], row[4], id=row[0])
             cls.all[row[0]] = patient
         
