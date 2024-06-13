@@ -49,7 +49,6 @@ class Doctor:
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 specialization TEXT NOT NULL
-                appointments TEXT 
             )
         """
         CURSOR.execute(sql)
@@ -133,3 +132,46 @@ class Doctor:
         sql = "SELECT * FROM doctors WHERE name = ?"
         row = CURSOR.execute(sql, (name,)).fetchone()
         return cls.instance_from_db(row) if row else None
+
+def manage_doctors():
+    """Function to manage doctor-related operations from the CLI"""
+    while True:
+        print("\n--- Manage Doctors ---")
+        print("1. Add Doctor")
+        print("2. View Doctors")
+        print("3. Update Doctor")
+        print("4. Delete Doctor")
+        print("5. Back to Main Menu")
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            name = input("Enter doctor's name: ")
+            specialization = input("Enter doctor's specialization: ")
+            Doctor.create(name, specialization)
+            print(f"Doctor {name} added successfully.")
+        elif choice == '2':
+            doctors = Doctor.get_all()
+            for doctor in doctors:
+                print(doctor)
+        elif choice == '3':
+            id = int(input("Enter doctor's ID to update: "))
+            doctor = Doctor.find_by_id(id)
+            if doctor:
+                doctor.name = input(f"Enter new name (current: {doctor.name}): ") or doctor.name
+                doctor.specialization = input(f"Enter new specialization (current: {doctor.specialization}): ") or doctor.specialization
+                doctor.update()
+                print(f"Doctor {doctor.name} updated successfully.")
+            else:
+                print("Doctor not found.")
+        elif choice == '4':
+            id = int(input("Enter doctor's ID to delete: "))
+            doctor = Doctor.find_by_id(id)
+            if doctor:
+                doctor.delete()
+                print(f"Doctor {doctor.name} deleted successfully.")
+            else:
+                print("Doctor not found.")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
