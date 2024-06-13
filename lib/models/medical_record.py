@@ -1,7 +1,5 @@
 # lib/models/medical_record.py
 from models.__init__ import CONN, CURSOR
-from models.patient import Patient
-from models.doctor import Doctor
 
 class MedicalRecord:
     
@@ -134,17 +132,17 @@ class MedicalRecord:
     def instance_from_db(cls, row):
         """Return a MedicalRecord object having the attribute values from the table row."""
         
-        # Check the dictionary for existing instances using the row's primary key
+        
         medical_record = cls.all.get(row[0])
         if medical_record:
-            # Ensure attributes match row values in case local instance was modified
+            
             medical_record.patient_id = row[1]
             medical_record.doctor_id = row[2]
             medical_record.record_date = row[3]
             medical_record.diagnosis = row[4]
             medical_record.treatment = row[5]
         else:
-            # Create a new instance using row values
+            
             medical_record = cls(row[1], row[2], row[3], row[4], row[5], id=row[0])
             cls.all[row[0]] = medical_record
         
@@ -181,3 +179,53 @@ class MedicalRecord:
         rows = CURSOR.fetchall()
         return [cls.instance_from_db(row) for row in rows]
 
+def manage_medical_records():
+    """Function to manage medical record-related operations from the CLI"""
+    while True:
+        print("\n--- Manage Medical Records ---")
+        print("1. Add Medical Record")
+        print("2. View Medical Records")
+        print("3. Update Medical Record")
+        print("4. Delete Medical Record")
+        print("5. Back to Main Menu")
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            from models.patient import Patient
+            from models.doctor import Doctor  
+            patient_id = int(input("Enter patient's ID: "))
+            doctor_id = int(input("Enter doctor's ID: "))
+            record_date = input("Enter record date (YYYY-MM-DD): ")
+            diagnosis = input("Enter diagnosis: ")
+            treatment = input("Enter treatment: ")
+            MedicalRecord.create(patient_id, doctor_id, record_date, diagnosis, treatment)
+            print("Medical record added successfully.")
+        elif choice == '2':
+            records = MedicalRecord.get_all()
+            for record in records:
+                print(record)
+        elif choice == '3':
+            id = int(input("Enter medical record ID to update: "))
+            record = MedicalRecord.find_by_id(id)
+            if record:
+                record.patient_id = int(input(f"Enter new patient ID (current: {record.patient_id}): ") or record.patient_id)
+                record.doctor_id = int(input(f"Enter new doctor ID (current: {record.doctor_id}): ") or record.doctor_id)
+                record.record_date = input(f"Enter new record date (current: {record.record_date}): ") or record.record_date
+                record.diagnosis = input(f"Enter new diagnosis (current: {record.diagnosis}): ") or record.diagnosis
+                record.treatment = input(f"Enter new treatment (current: {record.treatment}): ") or record.treatment
+                record.update()
+                print("Medical record updated successfully.")
+            else:
+                print("Medical record not found.")
+        elif choice == '4':
+            id = int(input("Enter medical record ID to delete: "))
+            record = MedicalRecord.find_by_id(id)
+            if record:
+                record.delete()
+                print("Medical record deleted successfully.")
+            else:
+                print("Medical record not found.")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
