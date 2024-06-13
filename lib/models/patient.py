@@ -1,23 +1,24 @@
 # lib/models/patient.py
 from models.__init__ import CONN, CURSOR
-from medical_record import Record
+from medical_record import MedicalRecord
 from appointment import Appointment
 
 class Patient:
     
     all = {}
     
-    def __init__(self, first_name, last_name, age, id=None):
+    def __init__(self, first_name, last_name, age, gender, id=None):
         self.id = id
         self.first_name = first_name
         self.last_name = last_name
         self.age = age
+        self.gender = gender
         self.medical_records = []
         self.appointments = []
 
     def __repr__(self):
         return (
-            f"Patient(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, age={self.age}, medical_records={self.medical_records}, appointments={self.appointments})"
+            f"Patient(id={self.id}, first_name={self.first_name}, last_name={self.last_name}, age={self.age}, gender={self.gender}, medical_records={self.medical_records}, appointments={self.appointments})"
         )
     
     @property
@@ -53,6 +54,17 @@ class Patient:
         else:
             raise ValueError("Age must be a positive integer")
     
+    @property
+    def gender(self):
+        return self._gender
+    
+    @gender.setter
+    def gender(self, gender):
+        if isinstance(gender, str) and gender in ["Male", "Female", "Other"]:
+            self._gender = gender
+        else:
+            raise ValueError("Gender must be 'Male', 'Female', or 'Other'")
+    
     @classmethod
     def create_table(cls):
         """Create a new table to persist the attributes of Patient instances"""
@@ -61,7 +73,8 @@ class Patient:
                 id INTEGER PRIMARY KEY,
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
-                age INTEGER NOT NULL
+                age INTEGER NOT NULL,
+                gender TEXT NOT NULL
             )
         """
         CURSOR.execute(sql)
@@ -77,10 +90,10 @@ class Patient:
     def save(self):
         """Persist the attributes of a Patient instance to the database"""
         sql = """
-            INSERT INTO patients (first_name, last_name, age)
-            VALUES (?, ?, ?)
+            INSERT INTO patients (first_name, last_name, age, gender)
+            VALUES (?, ?, ?, ?)
         """
-        CURSOR.execute(sql, (self.first_name, self.last_name, self.age))
+        CURSOR.execute(sql, (self.first_name, self.last_name, self.age, self.gender))
         CONN.commit()
         self.id = CURSOR.lastrowid
     
@@ -88,10 +101,10 @@ class Patient:
         """Update the table row corresponding to the current Patient instance"""
         sql = """
             UPDATE patients
-            SET first_name = ?, last_name = ?, age = ?
+            SET first_name = ?, last_name = ?, age = ?, gender = ?
             WHERE id = ?
         """
-        CURSOR.execute(sql, (self.first_name, self.last_name, self.age, self.id))
+        CURSOR.execute(sql, (self.first_name, self.last_name, self.age, self.gender, self.id))
         CONN.commit()
     
     def delete(self):
@@ -101,9 +114,9 @@ class Patient:
         CONN.commit()
     
     @classmethod
-    def create(cls, first_name, last_name, age):
+    def create(cls, first_name, last_name, age, gender):
         """Create a new Patient instance and persist it to the database"""
-        patient = cls(first_name, last_name, age)
+        patient = cls(first_name, last_name, age, gender)
         patient.save()
         return patient
     
@@ -118,13 +131,14 @@ class Patient:
             patient.first_name = row[1]
             patient.last_name = row[2]
             patient.age = row[3]
+            patient.gender = row[4]
         else:
             # Create a new instance using row values
-            patient = cls(row[1], row[2], row[3], id=row[0])
+            patient = cls(row[1], row[2], row[3], row[4], id=row[0])
             cls.all[row[0]] = patient
         
         # Retrieve and assign related medical records
-        patient.medical_records = Record.find_by_patient_id(patient.id)
+        patient.medical_records = MedicalRecord.find_by_patient_id(patient.id)
         # Retrieve and assign related appointments
         patient.appointments = Appointment.find_by_patient_id(patient.id)
         
