@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-from models.__init__ import CONN, CURSOR
-from models.doctor import Doctor
-from models.patient import Patient
-=======
 # lib/models/appointment.py
 from models.__init__ import CONN, CURSOR
->>>>>>> 4bc14eb (Add CLI Interface)
 
 class Appointment:
     
@@ -171,10 +165,9 @@ class Appointment:
         CURSOR.execute(sql, (doctor_id,))
         rows = CURSOR.fetchall()
         return [cls.instance_from_db(row) for row in rows]
-<<<<<<< HEAD
-=======
+    #CLI Interface
 def manage_appointments():
-    while True:
+     while True:
         print("\n--- Manage Appointments ---")
         print("1. Create Appointment")
         print("2. View All Appointments")
@@ -235,4 +228,3 @@ def delete_appointment():
             print("Appointment not found.")
     except ValueError:
         print("Invalid ID format.")
->>>>>>> 4bc14eb (Add CLI Interface)
