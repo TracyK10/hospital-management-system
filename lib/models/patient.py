@@ -1,6 +1,6 @@
 # lib/models/patient.py
 from models.__init__ import CONN, CURSOR
-from medical_record import Record
+from medical_record import MedicalRecord
 from appointment import Appointment
 
 class Patient:
@@ -124,7 +124,7 @@ class Patient:
             cls.all[row[0]] = patient
         
         # Retrieve and assign related medical records
-        patient.medical_records = Record.find_by_patient_id(patient.id)
+        patient.medical_records = MedicalRecord.find_by_patient_id(patient.id)
         # Retrieve and assign related appointments
         patient.appointments = Appointment.find_by_patient_id(patient.id)
         
